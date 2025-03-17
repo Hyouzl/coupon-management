@@ -22,11 +22,9 @@ public class CouponIssueService {
 
     @Transactional
     public void issue(Long couponId, Long userId) {
-
-        Coupon coupon = findCoupon(couponId);
-        coupon.isssue(); // 전체 수량에 대한 검증과, 발급 기간에 대한 검증 후 이슈 발급 수 증가.
-        saveCouponIssue(couponId, userId);
-
+            Coupon coupon = findCoupon(couponId);
+            coupon.isssue(); // 전체 수량에 대한 검증과, 발급 기간에 대한 검증 후 이슈 발급 수 증가.
+            saveCouponIssue(couponId, userId);
     }
 
     @Transactional(readOnly = true)
