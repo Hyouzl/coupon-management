@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.traffic.couponcore.component.DistributeLockExecutor;
 import com.traffic.couponcore.exception.CouponIssueException;
 import com.traffic.couponcore.exception.ErrorCode;
-import com.traffic.couponcore.model.Coupon;
 import com.traffic.couponcore.repository.redis.RedisRepositroy;
 import com.traffic.couponcore.repository.redis.dto.CouponIssueRequest;
+import com.traffic.couponcore.repository.redis.dto.CouponRedisEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,35 +16,33 @@ import static com.traffic.couponcore.util.CouponRedisUtils.getIssueRequestQueueK
 
 @RequiredArgsConstructor
 @Service
-public class AsyncCouponIssueServcie {
+public class AsyncCouponIssueServcieV1 {
 
     private final RedisRepositroy redisRepositroy;
     private final CouponIssueRedisService couponIssueRedisService;
-    private final CouponIssueService couponIssueService;
+    private final CouponCacheService couponCacheService;
     private final DistributeLockExecutor distributeLockExecutor;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void issue(Long couponId, Long userId) {
-        Coupon coupon = couponIssueService.findCoupon(couponId);
-
-        if (!coupon.avaliableIssueDate()) {
-            throw new CouponIssueException(ErrorCode.INVALID_COUPON_ISSUE_DATE, "발급 가능한 일자가 아닙니다.");
-        }
-
-        // 레디스 동시성 제어.
+        CouponRedisEntity coupon = couponCacheService.getCouponCache(couponId);
+        // 발급 기한 검증 --> 캐시로부터 발급 기한 검증
+        coupon.CheckdateIssuableCoupon();
+        //동시성 제어.
         distributeLockExecutor.execute("lock_%s".formatted(couponId), 3000, 3000, () -> {
-            if (!couponIssueRedisService.avaliableTotalIssueQuantity(coupon.getTotalQuantity(), userId)) {
-                throw new CouponIssueException(ErrorCode.INVALID_COUPON_ISSUE_QUANTITY, "발급 가능한 수량을 초과합니다.");
-            }
-
-            if (!couponIssueRedisService.avaliableUserIssueQuantity(couponId, userId)) {
-                throw new CouponIssueException(ErrorCode.DUPLICATED_COUPON_ISSUE, "이미 발급 요청이 처리됐습니다.");
-            }
-
+            couponIssueRedisService.checkCouponIssueQuantity(coupon, userId);
             issueRequest(couponId, userId);
         });
 
     }
+
+    /*
+      1. totalQuantity > redisRepository.sCard(key) // 쿠폰 발급 수량 해제
+      2. !redisRepository.sIsMember(key, String.valueOf(userId)) // 중복 쿠폰 발급 요청 제어
+      3. redisRepository.sAdd // 쿠폰 발급 요청 저장
+      4. redisRepository.rPush // 쿠폰 발급 큐에 적재
+     */
+
 
     private void issueRequest(Long couponId, Long userId) {
         CouponIssueRequest issueRequest = new CouponIssueRequest(couponId, userId);
@@ -58,7 +56,5 @@ public class AsyncCouponIssueServcie {
         }
 
     }
-
-
 
 }

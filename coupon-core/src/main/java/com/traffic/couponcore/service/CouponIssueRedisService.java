@@ -1,7 +1,11 @@
 package com.traffic.couponcore.service;
 
 
+import com.traffic.couponcore.exception.CouponIssueException;
+import com.traffic.couponcore.exception.ErrorCode;
+import com.traffic.couponcore.model.Coupon;
 import com.traffic.couponcore.repository.redis.RedisRepositroy;
+import com.traffic.couponcore.repository.redis.dto.CouponRedisEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +16,18 @@ import static com.traffic.couponcore.util.CouponRedisUtils.getIssueRequestKey;
 public class CouponIssueRedisService {
 
     private final RedisRepositroy redisRepositroy;
+
+
+    public void checkCouponIssueQuantity(CouponRedisEntity coupon, Long userId) {
+        if (!avaliableTotalIssueQuantity(coupon.totalQuantity(), userId)) {
+            throw new CouponIssueException(ErrorCode.INVALID_COUPON_ISSUE_QUANTITY, "발급 가능한 수량을 초과합니다.");
+        }
+
+        if (!avaliableUserIssueQuantity(coupon.id(), userId)) {
+            throw new CouponIssueException(ErrorCode.DUPLICATED_COUPON_ISSUE, "이미 발급 요청이 처리됐습니다.");
+        }
+    }
+
 
     public boolean avaliableTotalIssueQuantity(Integer totalQuantity, Long couponId) {
         if(totalQuantity == null) {

@@ -23,8 +23,9 @@ import java.util.stream.IntStream;
 
 import static com.traffic.couponcore.util.CouponRedisUtils.getIssueRequestKey;
 import static com.traffic.couponcore.util.CouponRedisUtils.getIssueRequestQueueKey;
+import static org.junit.jupiter.api.Assertions.*;
 
-class AsyncCouponIssueServcieTest extends TestConfig{
+class AsyncCouponIssueServcieV2Test extends TestConfig {
 
     @Autowired
     AsyncCouponIssueServcieV1 sut;
@@ -179,4 +180,6 @@ class AsyncCouponIssueServcieTest extends TestConfig{
         String isSavedIssueRequest = redisTemplate.opsForList().leftPop(getIssueRequestQueueKey());
         Assertions.assertEquals(new ObjectMapper().writeValueAsString(requestIssue), isSavedIssueRequest);
     }
+
+
 }
