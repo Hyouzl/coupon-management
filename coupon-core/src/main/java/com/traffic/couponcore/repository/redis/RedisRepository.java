@@ -19,7 +19,7 @@ import static com.traffic.couponcore.util.CouponRedisUtils.getIssueRequestQueueK
 
 @RequiredArgsConstructor
 @Repository
-public class RedisRepositroy {
+public class RedisRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
     private RedisScript<String> issueScript = issueRequestScript();
@@ -46,6 +46,17 @@ public class RedisRepositroy {
         return redisTemplate.opsForList().rightPush(key, value);
     }
 
+    public Long lSize(String key) {
+        return redisTemplate.opsForList().size(key);
+    }
+
+    public String lPop(String key) {
+        return redisTemplate.opsForList().leftPop(key);
+    }
+
+    public String lIndex(String key, long index) {
+        return redisTemplate.opsForList().index(key, index);
+    }
 
     // 레디스를 활용한 비동기
     public void issueRequest(Long couponId, Long userId, int totalIssueQuantity) {
