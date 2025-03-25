@@ -4,10 +4,12 @@ import com.traffic.couponcore.exception.CouponIssueException;
 import com.traffic.couponcore.exception.ErrorCode;
 import com.traffic.couponcore.model.Coupon;
 import com.traffic.couponcore.model.CouponIssue;
+import com.traffic.couponcore.model.event.CouponIssueCompleteEvent;
 import com.traffic.couponcore.repository.mysql.CouponIssueJpaRepository;
 import com.traffic.couponcore.repository.mysql.CouponIssueRepository;
 import com.traffic.couponcore.repository.mysql.CouponJpaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,11 +20,11 @@ public class CouponIssueService {
     private final CouponJpaRepository couponJpaRepository;
     private final CouponIssueJpaRepository couponIssueJpaRepository;
     private final CouponIssueRepository couponIssueRepository;
-
+    private final ApplicationEventPublisher applicationEventPublish;
 
     @Transactional
     public void issue(Long couponId, Long userId) {
-            Coupon coupon = findCoupon(couponId);
+            Coupon coupon = findCouponWithLock(couponId);
             coupon.isssue(); // 전체 수량에 대한 검증과, 발급 기간에 대한 검증 후 이슈 발급 수 증가.
             saveCouponIssue(couponId, userId);
     }
@@ -30,6 +32,13 @@ public class CouponIssueService {
     @Transactional(readOnly = true)
     public Coupon findCoupon(Long couponId) {
         return couponJpaRepository.findById(couponId).orElseThrow(()-> {
+            throw new CouponIssueException(ErrorCode.COUPON_NOT_EXIST, "쿠폰 정책이 존재하지 않습니다. %s".formatted(couponId));
+        });
+    }
+
+    @Transactional
+    public Coupon findCouponWithLock(long couponId) {
+        return couponJpaRepository.findCouponWithLock(couponId).orElseThrow(() -> {
             throw new CouponIssueException(ErrorCode.COUPON_NOT_EXIST, "쿠폰 정책이 존재하지 않습니다. %s".formatted(couponId));
         });
     }
@@ -47,6 +56,14 @@ public class CouponIssueService {
     private void checkAlreadyIssuance(Long couponId, Long userId) {
         if (couponIssueRepository.findFirstCouponIssue(couponId, userId) != null) {
             throw new CouponIssueException(ErrorCode.DUPLICATED_COUPON_ISSUE, "이미 발급된 쿠폰입니다. user_id: %s, coupon_id: %s ".formatted(userId,couponId));
+        }
+    }
+
+    private void publishCouponEvent(Coupon coupon) {
+        // 발급이 모두 완료된 경우.
+        if (coupon.isIssueComplete()) {
+            // 애플리케이션 내부에서 이벤트 발행
+            applicationEventPublish.publishEvent(new CouponIssueCompleteEvent(coupon.getId()));
         }
     }
 

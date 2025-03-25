@@ -1,2 +1,4 @@
-package com.traffic.couponcore.model.event;public record CouponIssueCompleteEvent() {
+package com.traffic.couponcore.model.event;
+
+public record CouponIssueCompleteEvent(Long couponId) {
 }

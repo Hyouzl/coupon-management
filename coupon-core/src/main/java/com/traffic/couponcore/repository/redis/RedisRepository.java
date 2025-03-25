@@ -23,7 +23,7 @@ public class RedisRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
     private RedisScript<String> issueScript = issueRequestScript();
-    private final String issueRequestQueuKey = getIssueRequestQueueKey();
+    private final String issueRequestQueueKey = getIssueRequestQueueKey();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public Boolean zAdd(String key, String value, Long scroe) {
@@ -66,7 +66,7 @@ public class RedisRepository {
         try {
             String code = redisTemplate.execute(
                     issueScript,
-                    List.of(issueRequestKey, issueRequestQueuKey),
+                    List.of(issueRequestKey, issueRequestQueueKey),
                     String.valueOf(userId),
                     String.valueOf(totalIssueQuantity),
                     objectMapper.writeValueAsString(couponIssueRequest)

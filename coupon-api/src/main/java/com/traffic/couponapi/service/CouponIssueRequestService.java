@@ -35,7 +35,6 @@ public class CouponIssueRequestService {
 
     public void asyncIssueRequest_V2(CouponIssueRequestDTO couponIssueRequestDTO) {
         asyncCouponIssueServcieV2.issue(couponIssueRequestDTO.couponId(), couponIssueRequestDTO.userId());
-
         log.info("쿠폰 발급 완료. couponId: %s, userId: %s ".formatted(couponIssueRequestDTO.couponId(), couponIssueRequestDTO.userId()));
 
     }

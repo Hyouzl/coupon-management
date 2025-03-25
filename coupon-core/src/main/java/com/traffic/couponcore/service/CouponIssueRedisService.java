@@ -3,8 +3,8 @@ package com.traffic.couponcore.service;
 
 import com.traffic.couponcore.exception.CouponIssueException;
 import com.traffic.couponcore.exception.ErrorCode;
-import com.traffic.couponcore.model.Coupon;
-import com.traffic.couponcore.repository.redis.RedisRepositroy;
+
+import com.traffic.couponcore.repository.redis.RedisRepository;
 import com.traffic.couponcore.repository.redis.dto.CouponRedisEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import static com.traffic.couponcore.util.CouponRedisUtils.getIssueRequestKey;
 @Service
 public class CouponIssueRedisService {
 
-    private final RedisRepositroy redisRepositroy;
+    private final RedisRepository redisRepository;
 
 
     public void checkCouponIssueQuantity(CouponRedisEntity coupon, Long userId) {
@@ -34,12 +34,12 @@ public class CouponIssueRedisService {
             return true; // 발급 수량 제한 x
         }
         String key = getIssueRequestKey(couponId);
-        return totalQuantity > redisRepositroy.sCard(key);
+        return totalQuantity > redisRepository.sCard(key);
     }
 
     public boolean avaliableUserIssueQuantity(Long couponId, Long userId) {
         String key = getIssueRequestKey(couponId);
-        boolean result = redisRepositroy.sIsMember(key, String.valueOf(userId));
+        boolean result = redisRepository.sIsMember(key, String.valueOf(userId));
         System.out.println(result);
         return !result;
     }

@@ -1,5 +1,6 @@
 package com.traffic.couponcore.configuration;
 
+
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
@@ -14,7 +15,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfiguration {
 
     @Value("${spring.data.redis.host}")
-    private String localhost;
+    private String host;
 
     @Value("${spring.data.redis.port}")
     private int port;
@@ -22,7 +23,7 @@ public class RedisConfiguration {
     @Bean
     RedissonClient redissonClient() {
         Config config = new Config();
-        String address = "redis://" + localhost + ":" + port;
+        String address = "redis://" + host + ":" + port;
         config.useSingleServer().setAddress(address);
         return Redisson.create(config);
     }
@@ -41,6 +42,5 @@ public class RedisConfiguration {
 
         return template;
     }
-
 
 }

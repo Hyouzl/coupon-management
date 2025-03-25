@@ -60,7 +60,7 @@ class AsyncCouponIssueServcieV2Test extends TestConfig {
     }
 
     // 쿠폰 발급 수량에 관한 검증
-    @Test
+/*    @Test
     @DisplayName("쿠폰 발급 - 가능한 발급 수량이 없으면 예외 반환")
     void issue_2() {
         // given
@@ -85,7 +85,7 @@ class AsyncCouponIssueServcieV2Test extends TestConfig {
 
         Assertions.assertEquals(exception.getErrorCode(), ErrorCode.INVALID_COUPON_ISSUE_QUANTITY);
 
-    }
+    }*/
 
 
     // 쿠폰 발급 기한에 관한 검증

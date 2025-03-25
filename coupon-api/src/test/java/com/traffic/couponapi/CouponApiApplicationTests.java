@@ -9,7 +9,6 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties= "spring.config.name=application-core")
 @SpringBootTest
 class CouponApiApplicationTests {
-
     @Test
     void contextLoads() {
     }

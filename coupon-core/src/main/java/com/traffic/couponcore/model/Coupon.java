@@ -47,6 +47,14 @@ public class Coupon extends BaseTimeEntity{
     @Column(nullable = false)
     private LocalDateTime dateIssueEnd; // 발급 종료 일시
 
+
+    public boolean isIssueComplete() {
+        LocalDateTime now = LocalDateTime.now();
+        return dateIssueEnd.isBefore(now) || !avaliableIssueQuantity();
+
+    }
+
+
     // 발급 가능 수량 검증
     public boolean avaliableIssueQuantity() {
 

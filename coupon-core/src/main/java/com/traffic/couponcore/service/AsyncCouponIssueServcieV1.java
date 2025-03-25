@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.traffic.couponcore.component.DistributeLockExecutor;
 import com.traffic.couponcore.exception.CouponIssueException;
 import com.traffic.couponcore.exception.ErrorCode;
-import com.traffic.couponcore.repository.redis.RedisRepositroy;
+import com.traffic.couponcore.repository.redis.RedisRepository;
 import com.traffic.couponcore.repository.redis.dto.CouponIssueRequest;
 import com.traffic.couponcore.repository.redis.dto.CouponRedisEntity;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import static com.traffic.couponcore.util.CouponRedisUtils.getIssueRequestQueueK
 @Service
 public class AsyncCouponIssueServcieV1 {
 
-    private final RedisRepositroy redisRepositroy;
+    private final RedisRepository redisRepository;
     private final CouponIssueRedisService couponIssueRedisService;
     private final CouponCacheService couponCacheService;
     private final DistributeLockExecutor distributeLockExecutor;
@@ -49,8 +49,8 @@ public class AsyncCouponIssueServcieV1 {
 
         try {
             String value = objectMapper.writeValueAsString(issueRequest);
-            redisRepositroy.sAdd(getIssueRequestKey(couponId), String.valueOf(userId));
-            redisRepositroy.rPush(getIssueRequestQueueKey(), value);
+            redisRepository.sAdd(getIssueRequestKey(couponId), String.valueOf(userId));
+            redisRepository.rPush(getIssueRequestQueueKey(), value);
         } catch (JsonProcessingException e) {
             throw new CouponIssueException(ErrorCode.FAIL_COUPON_ISSUE_REQUEST, "inputL %s".formatted(issueRequest));
         }
