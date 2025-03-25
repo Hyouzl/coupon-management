@@ -29,12 +29,15 @@ public class CouponIssueListener {
     @Scheduled(fixedDelay = 1000L)
     public void issue() throws JsonProcessingException {
         log.info("listen....");
+
+        // 레디스 발급 요청이 존재하면...
         while (existCouponIssueTartget()) {
+            // 레디스에 발급 요청 가져오기
             CouponIssueRequest couponIssueRequest = getIssueTarget();
             log.info("발급 시작 %s".formatted(couponIssueRequest));
             couponIssueService.issue(couponIssueRequest.couponId(), couponIssueRequest.userId());
             log.info("발급 완료 %s".formatted(couponIssueRequest));
-            removeIssuedTarget();
+            removeIssuedTarget(); // 레디스에서 pop
         }
     }
 

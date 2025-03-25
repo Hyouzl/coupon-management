@@ -15,7 +15,6 @@ public class AsyncCouponIssueServcieV2 {
 
 
     public void issue (Long couponId, Long userId) {
-
         // 레디스로 들어가는 트래픽을 로컬로 돌리기 -> 로컬 캐시로 변경
         // 로컬 캐시가 존재하는 동안은 레디스로 들어가는 트래픽 제한 가능. -> 성능 최적화
         CouponRedisEntity couponRedisEntity = couponCacheService.getCouponLocalCache(couponId);

@@ -21,11 +21,21 @@ public class CouponIssueRequestService {
     private final AsyncCouponIssueServcieV2 asyncCouponIssueServcieV2;
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
-    public void issueRequest_V1(CouponIssueRequestDTO couponIssueRequestDTO) {
+
+    // RPS 대략 300 정도.
+    public void issueRequest_V1_1(CouponIssueRequestDTO couponIssueRequestDTO) {
+        distributeLockExecutor.execute("lock_" + couponIssueRequestDTO.couponId(), 10000, 10000, () ->
+                couponIssueService.issue(couponIssueRequestDTO.couponId(), couponIssueRequestDTO.userId())
+        );
+        log.info("쿠폰 발급 완료. couponId: %s, userId: %s ".formatted(couponIssueRequestDTO.couponId(), couponIssueRequestDTO.userId()));
+    }
+
+    public void issueRequest_V1_2(CouponIssueRequestDTO couponIssueRequestDTO) {
         couponIssueService.issue(couponIssueRequestDTO.couponId(), couponIssueRequestDTO.userId());
         log.info("쿠폰 발급 완료. couponId: %s, userId: %s ".formatted(couponIssueRequestDTO.couponId(), couponIssueRequestDTO.userId()));
     }
 
+    // sorted set -> set 으로 변경.
     public void asyncIssueRequest_V1(CouponIssueRequestDTO couponIssueRequestDTO) {
         asyncCouponIssueServcieV1.issue(couponIssueRequestDTO.couponId(), couponIssueRequestDTO.userId());
 
@@ -33,6 +43,8 @@ public class CouponIssueRequestService {
 
     }
 
+    // redis script 를 사용해서, 동시성 제어
+    // 캐싱 적용을 통한 성능 개선
     public void asyncIssueRequest_V2(CouponIssueRequestDTO couponIssueRequestDTO) {
         asyncCouponIssueServcieV2.issue(couponIssueRequestDTO.couponId(), couponIssueRequestDTO.userId());
         log.info("쿠폰 발급 완료. couponId: %s, userId: %s ".formatted(couponIssueRequestDTO.couponId(), couponIssueRequestDTO.userId()));

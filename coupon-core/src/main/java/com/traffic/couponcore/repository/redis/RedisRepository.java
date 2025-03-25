@@ -30,6 +30,8 @@ public class RedisRepository {
         // 데이터가 없는 경우만 !! 커맨드 처리.
         return redisTemplate.opsForZSet().addIfAbsent(key, value, scroe);
     }
+
+    // set 에 추가
     public Long sAdd(String key, String value) {
         return redisTemplate.opsForSet().add(key, value);
     }
@@ -46,6 +48,8 @@ public class RedisRepository {
         return redisTemplate.opsForList().rightPush(key, value);
     }
 
+
+    // 키에 해당하는 리스트에 사이즈 확인
     public Long lSize(String key) {
         return redisTemplate.opsForList().size(key);
     }

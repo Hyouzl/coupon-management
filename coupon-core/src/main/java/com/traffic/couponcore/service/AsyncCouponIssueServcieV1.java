@@ -24,11 +24,13 @@ public class AsyncCouponIssueServcieV1 {
     private final DistributeLockExecutor distributeLockExecutor;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    // set 으로 구현
     public void issue(Long couponId, Long userId) {
         CouponRedisEntity coupon = couponCacheService.getCouponCache(couponId);
         // 발급 기한 검증 --> 캐시로부터 발급 기한 검증
         coupon.CheckdateIssuableCoupon();
-        //동시성 제어.
+        // 수량에 대한 동시성 제어.
+        // 락을 걸고 , 해제하는 것에서 병목이 생김.
         distributeLockExecutor.execute("lock_%s".formatted(couponId), 3000, 3000, () -> {
             couponIssueRedisService.checkCouponIssueQuantity(coupon, userId);
             issueRequest(couponId, userId);
@@ -49,8 +51,8 @@ public class AsyncCouponIssueServcieV1 {
 
         try {
             String value = objectMapper.writeValueAsString(issueRequest);
-            redisRepository.sAdd(getIssueRequestKey(couponId), String.valueOf(userId));
-            redisRepository.rPush(getIssueRequestQueueKey(), value);
+            redisRepository.sAdd(getIssueRequestKey(couponId), String.valueOf(userId)); // 쿠폰 발급 요청에 대한
+            redisRepository.rPush(getIssueRequestQueueKey(), value); // 쿠폰 발급 대기열
         } catch (JsonProcessingException e) {
             throw new CouponIssueException(ErrorCode.FAIL_COUPON_ISSUE_REQUEST, "inputL %s".formatted(issueRequest));
         }

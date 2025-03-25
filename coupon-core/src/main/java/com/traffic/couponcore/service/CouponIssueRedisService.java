@@ -37,6 +37,7 @@ public class CouponIssueRedisService {
         return totalQuantity > redisRepository.sCard(key);
     }
 
+    // 중복 발급 검증
     public boolean avaliableUserIssueQuantity(Long couponId, Long userId) {
         String key = getIssueRequestKey(couponId);
         boolean result = redisRepository.sIsMember(key, String.valueOf(userId));

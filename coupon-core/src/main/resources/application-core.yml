@@ -48,3 +48,27 @@ spring:
     redis:
       host: localhost
       port: 6380
+
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    hikari:
+      jdbc-url: jdbc:mysql://localhost:3306/coupon
+      username: PROD_USER_NAME
+      password: PROD_PASSWORD
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      maximum-pool-size: 10
+      connection-timeout: 30000
+      max-lifetime: 30000
+  jpa:
+    hibernate:
+      ddl-auto: update
+  data:
+    redis:
+      port: 6380
+      host: PROD_URL

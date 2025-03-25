@@ -15,13 +15,15 @@ public class CouponIssueController {
 
     private final CouponIssueRequestService couponIssueRequestService;
 
+    // 레디스 분산 락 , sql 분산락
     @PostMapping("/v1/issue")
     public CouponIssueResponseDTO issueV1(@RequestBody CouponIssueRequestDTO requestDTO) {
-        couponIssueRequestService.issueRequest_V1(requestDTO);
+        couponIssueRequestService.issueRequest_V1_2(requestDTO);
         return new CouponIssueResponseDTO(true, null);
     }
 
 
+    // 레디스를 활용한 자료구조를 통해 락 구현.
     @PostMapping("/v1/asyncIssue")
     public CouponIssueResponseDTO asyncIssueV1(@RequestBody CouponIssueRequestDTO requestDTO) {
         couponIssueRequestService.asyncIssueRequest_V1(requestDTO);
